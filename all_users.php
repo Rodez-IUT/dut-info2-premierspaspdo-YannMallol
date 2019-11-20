@@ -22,7 +22,12 @@
 				<th> Email </th>
 				<th> Status </th>
 			</tr>
+			
+			
 			<?php 
+				$status_id = '%';
+				$lettre = '';
+				$ok = false;
 				$host = 'localhost';
 				$port = "3306";
 				$db   = 'my_activities';
@@ -36,19 +41,39 @@
 					PDO::ATTR_EMULATE_PREPARES   => false,
 					];
 				
+				
 				try {
 					$pdo = new PDO($dsn, $user, $pass, $options);
 				} catch (PDOException $e) {
 					throw new PDOException($e->getMessage(), (int)$e->getCode());
 				} 
 				
-				$stmt = $pdo->query('SELECT * FROM users JOIN status ON status_id = status.id ORDER BY username'); 
-				
+				if(isset($_GET["lettre"]) && isset($_GET["status"])){
+					$status_id = $_GET["status"];
+					$lettre = $_GET["lettre"];
+					$ok = true;
+				}
+			?>
+			<form method="get" action="all_users.php">
+				<fieldset>
+					<p> Start with letter <input type="text" name="lettre" id="lettre" <?php if($ok == true) {echo 'value="'.$lettre.'"';}?>>  
+						<select name="status" id="status">
+							<option> Active account
+							<option> Waiting for account validation 	
+						</select>
+						<input type="submit"></input>
+					</p>
+				</fieldset>
+			</form>
+			<?php
+				//$stmt = $pdo->query('SELECT * FROM users JOIN status ON status_id = status.id ORDER BY username'); 
+				$stmt = $pdo->query('SELECT * FROM users JOIN status ON status_id = status.id  WHERE name = \''.$status_id.'\' AND username LIKE \''.$lettre.'%\'ORDER BY username'); 
 				while ($row = $stmt->fetch())
 				{
 					echo "<tr>"."<td>".$row['id'] ."</td><td>".$row['username']."</td><td>".$row['email']."</td>";
 					echo "<td>".$row['name']."</td>"."</tr>";
 				}
+				
 				
 				   
 			?>
